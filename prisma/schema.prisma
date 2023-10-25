@@ -1,0 +1,135 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider = "mysql"
+    url = env("DATABASE_URL")
+    relationMode = "prisma"
+}
+
+model Brand {
+    id                  Int             @id @default(autoincrement())
+    name                String          @unique
+    product             Product[]
+}
+
+model Country {
+    id                  Int             @id @default(autoincrement())
+    name                String          @unique
+    continentId         Int             
+    continent           Continent       @relation(fields: [continentId], references: [id])
+    product             Product[]
+    vendor              Vendor[]
+
+    @@index([continentId])
+}
+
+model Continent {
+    id                  Int             @id @default(autoincrement())
+    name                String          @unique
+    country             Country[]
+}
+
+model CurrencyCode {
+    id                  Int             @id @default(autoincrement())
+    code                String          @unique
+    vendor              Vendor[]
+}
+
+model Vendor {
+    id                  Int             @id @default(autoincrement())
+    name                String          @unique
+    countryId           Int
+    country             Country         @relation(fields: [countryId], references: [id])
+    currencyCodeId      Int
+    currencyCode        CurrencyCode    @relation(fields: [currencyCodeId], references: [id])
+    product             Product[]
+
+    @@index([countryId])
+    @@index([currencyCodeId])
+}
+
+model ProcessCategory {
+    id                  Int             @id @default(autoincrement())
+    name                String          @unique
+    product             Product[]
+}
+
+model ProductType {
+    id                  Int             @id @default(autoincrement())
+    name                String          @unique
+
+    product             Product[]
+}
+
+model TastingNote {
+    id                  Int             @id @default(autoincrement())
+    name                String          @unique
+    product             ProductToTastingNote[]
+}
+
+model Variety {
+    id                  Int             @id @default(autoincrement())
+    name                String          @unique
+    product             ProductToVariety[]
+}
+
+model ProductToVariety {
+    id                  Int             @id @default(autoincrement())
+    product_id          Int
+    product             Product         @relation(fields: [product_id], references: [id])
+    variety_id          Int             
+    variety             Variety         @relation(fields: [variety_id], references: [id])
+
+    @@index([product_id])
+    @@index([variety_id])
+}
+
+model ProductToTastingNote {
+    id                  Int             @id @default(autoincrement())
+    product_id          Int
+    product             Product         @relation(fields: [product_id], references: [id])
+    tasting_note_id     Int     
+    tasting_note        TastingNote     @relation(fields: [tasting_note_id], references: [id])
+
+    @@index([product_id])
+    @@index([tasting_note_id])
+}
+
+
+model Product {
+    id                  Int             @id @default(autoincrement())
+    brandId             Int
+    brand               Brand           @relation(fields: [brandId], references: [id])
+    countryOfOriginId   Int
+    countryOfOrigin     Country         @relation(fields: [countryOfOriginId], references: [id])
+    vendorId            Int
+    vendor              Vendor          @relation(fields: [vendorId], references: [id])
+    processCategoryId   Int
+    processCategory     ProcessCategory @relation(fields: [processCategoryId], references: [id])
+    productTypeId       Int
+    productType         ProductType     @relation(fields: [productTypeId], references: [id])
+    title               String
+    weight              Int
+    process             String
+    productUrl          String          @unique
+    imageUrl            String
+    soldOut             Boolean
+    discoveredDateTime  DateTime
+    handle              String
+    price               Decimal
+    decaf               Boolean
+    tastingNote         ProductToTastingNote[]
+    variety             ProductToVariety[]
+
+    @@index([brandId])
+    @@index([countryOfOriginId])
+    @@index([vendorId])
+    @@index([processCategoryId])
+    @@index([productTypeId])
+    @@index([productUrl])
+}
